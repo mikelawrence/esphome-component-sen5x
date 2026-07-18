@@ -13,10 +13,7 @@ esp32:
     type: arduino
 
 external_components:
-  source:
-    type: git
-    url: https://github.com/mikelawrence/esphome-component-sen5x
-    ref: ${ref}
+  - source: github://mikelawrence/esphome-component-sen5x@{ref}
 
 i2c:
   - id: i2c1_bus
