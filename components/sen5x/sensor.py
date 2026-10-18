@@ -492,7 +492,7 @@ SEN5X_TEMPERATURE_COMPENSATION_SCHEMA = cv.Schema(
             cv.float_range(min=-3.0000, max=3.0000)
         ),
         cv.Optional(CONF_TIME_CONSTANT, default=0): cv.templatable(
-            cv.int_range(min=0, max=65535),
+            cv.uint16_t,
         ),
         cv.Optional(CONF_SLOT, default=0): cv.templatable(cv.int_range(0, 4)),
     },
