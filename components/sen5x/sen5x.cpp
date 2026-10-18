@@ -8,7 +8,7 @@
 namespace esphome {
 namespace sen5x {
 
-static const char *const TAG = "sen5x";
+ESPHOME_LOG_TAG(TAG, "sen5x");
 
 static const uint16_t SEN5X_CMD_READ_MEASUREMENT = 0x03C4;
 static const uint16_t SEN62_CMD_READ_MEASUREMENT = 0x04A3;
