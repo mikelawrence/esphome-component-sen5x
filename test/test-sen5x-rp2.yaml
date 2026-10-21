@@ -12,7 +12,7 @@ rp2:
   board: rpipicow
 
 external_components:
-  - source: github://mikelawrence/esphome-component-sen5x@{ref}
+  - source: github://mikelawrence/esphome-component-sen5x@${ref}
 
 i2c:
   - id: i2c1_bus
