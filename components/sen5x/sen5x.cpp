@@ -324,8 +324,8 @@ void SEN5XComponent::dump_config() {
                 "  Type: %s\n"
                 "  Update Interval: %" PRIu32 "ms\n"
                 "  Serial number: %s",
-                TRUEFALSE(this->initialized_), LOG_STR_ARG(type_to_string(this->type_.value())),
-                this->update_interval_, this->serial_number_);
+                TRUEFALSE(this->initialized_), LOG_STR_ARG(type_to_string(this->type_.value())), this->update_interval_,
+                this->serial_number_);
   if (this->is_sen6x_()) {
     ESP_LOGCONFIG(TAG, "  Firmware version: %" PRIu8 ".%" PRIu8, this->firmware_major_, this->firmware_minor_);
   } else {
@@ -836,11 +836,10 @@ void SEN5XComponent::set_temperature_compensation(float offset, float normalized
     }
     this->busy_ = true;
     this->set_timeout(75, [this, comp]() {
-      ESP_LOGD(
-          TAG,
-          "Set Temperature Compensation updated, offset=%.3f, normalized_offset_slope=%.6f, time_constant=%" PRIu16
-          ", slot=%" PRIu8,
-          comp.offset / 200.0, comp.normalized_offset_slope / 10000.0, comp.time_constant, comp.slot);
+      ESP_LOGD(TAG,
+               "Set Temperature Compensation updated, offset=%.3f, normalized_offset_slope=%.6f, time_constant=%" PRIu16
+               ", slot=%" PRIu8,
+               comp.offset / 200.0, comp.normalized_offset_slope / 10000.0, comp.time_constant, comp.slot);
       if (!this->write_temperature_compensation_(comp)) {
         ESP_LOGE(TAG, "Set Temperature Compensation failed");
       }
