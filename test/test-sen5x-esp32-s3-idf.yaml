@@ -1,6 +1,9 @@
 substitutions:
   ref: main
 
+logger:
+  level: VERY_VERBOSE
+
 esphome:
   name: test-sen5x-esp32-s3-idf
   friendly_name: Test SEN5X Component with ESP32-S3 and ESP-IDF Framework
