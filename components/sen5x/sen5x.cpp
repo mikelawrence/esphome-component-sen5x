@@ -178,11 +178,11 @@ void SEN5XComponent::internal_setup_(Sen5xSetupStates state) {
       if (this->is_sen6x_()) {
         this->firmware_minor_ = firmware & 0xFF;
         this->firmware_major_ = firmware >> 8;
-        ESP_LOGV(TAG, "Read Firmware version: %u.%u", this->firmware_major_, this->firmware_minor_);
+        ESP_LOGV(TAG, "Read Firmware version: %" PRIu8 ".%" PRIu8, this->firmware_major_, this->firmware_minor_);
       } else {
         this->firmware_major_ = firmware >> 8;
         this->firmware_minor_ = 0xFF;  // not defined
-        ESP_LOGV(TAG, "Read Firmware version: %u", this->firmware_major_);
+        ESP_LOGV(TAG, "Read Firmware version: %" PRIu8, this->firmware_major_);
       }
       this->set_timeout(20, [this]() { this->internal_setup_(SEN5X_SM_SET_VOCB); });
       break;
@@ -199,7 +199,7 @@ void SEN5XComponent::internal_setup_(Sen5xSetupStates state) {
           } else {
 #if ESPHOME_LOG_LEVEL >= ESPHOME_LOG_LEVEL_VERBOSE
             char hex_buf[5 * 4];
-            format_hex_pretty_to(hex_buf, this->baseline_state_, 4, 0);
+            format_hex_pretty_to(hex_buf, this->voc_baseline_state_, 4, 0);
             ESP_LOGV(TAG, "VOC Baseline State loaded: %s", hex_buf);
 #endif
             this->set_timeout(20, [this]() { this->internal_setup_(SEN5X_SM_SET_ACI); });
@@ -322,17 +322,17 @@ void SEN5XComponent::dump_config() {
                 "SEN5X:\n"
                 "  Initialized: %s\n"
                 "  Type: %s\n"
-                "  Update Interval: %ums\n"
+                "  Update Interval: %" PRIu32 "ms\n"
                 "  Serial number: %s",
-                TRUEFALSE(this->initialized_), LOG_STR_ARG(type_to_string(this->type_.value())), this->update_interval_,
-                this->serial_number_);
+                TRUEFALSE(this->initialized_), LOG_STR_ARG(type_to_string(this->type_.value())),
+                this->update_interval_, this->serial_number_);
   if (this->is_sen6x_()) {
-    ESP_LOGCONFIG(TAG, "  Firmware version: %u.%u", this->firmware_major_, this->firmware_minor_);
+    ESP_LOGCONFIG(TAG, "  Firmware version: %" PRIu8 ".%" PRIu8, this->firmware_major_, this->firmware_minor_);
   } else {
-    ESP_LOGCONFIG(TAG, "  Firmware version: %u", this->firmware_major_);
+    ESP_LOGCONFIG(TAG, "  Firmware version: %" PRIu8, this->firmware_major_);
   }
   if (this->auto_cleaning_interval_.has_value()) {
-    ESP_LOGCONFIG(TAG, "  Auto cleaning interval: %" PRId32 "s", this->auto_cleaning_interval_.value());
+    ESP_LOGCONFIG(TAG, "  Auto cleaning interval: %" PRIu32 "s", this->auto_cleaning_interval_.value());
   }
   if (this->acceleration_mode_.has_value()) {
     ESP_LOGCONFIG(TAG, "  RH/T acceleration mode: %s",
@@ -344,7 +344,7 @@ void SEN5XComponent::dump_config() {
                   "  Temperature Compensation:\n"
                   "    Offset: %.3f\n"
                   "    Normalized Offset Slope: %.6f\n"
-                  "    Time Constant: %u",
+                  "    Time Constant: %" PRIu16,
                   comp.offset / 200.0, comp.normalized_offset_slope / 10000.0, comp.time_constant);
   }
   if (this->temperature_acceleration_.has_value()) {
@@ -377,12 +377,12 @@ void SEN5XComponent::dump_config() {
     GasTuning tuning_params = this->voc_tuning_params_.value();
     ESP_LOGCONFIG(TAG,
                   "    Algorithm Tuning Parameters:\n"
-                  "      Index Offset: %u\n"
-                  "      Learning Time Offset (hours): %u\n"
-                  "      Learning Time Gain (hours): %u\n"
-                  "      Gating Max Duration (minutes): %u\n"
-                  "      STD Initial: %u\n"
-                  "      Gain Factor: %u",
+                  "      Index Offset: %" PRIu16 "\n"
+                  "      Learning Time Offset (hours): %" PRIu16 "\n"
+                  "      Learning Time Gain (hours): %" PRIu16 "\n"
+                  "      Gating Max Duration (minutes): %" PRIu16 "\n"
+                  "      STD Initial: %" PRIu16 "\n"
+                  "      Gain Factor: %" PRIu16,
                   tuning_params.index_offset, tuning_params.learning_time_offset_hours,
                   tuning_params.learning_time_gain_hours, tuning_params.gating_max_duration_minutes,
                   tuning_params.std_initial, tuning_params.gain_factor);
@@ -392,10 +392,10 @@ void SEN5XComponent::dump_config() {
     GasTuning tuning_params = this->nox_tuning_params_.value();
     ESP_LOGCONFIG(TAG,
                   "    Algorithm Tuning Parameters:\n"
-                  "      Index Offset: %u\n"
-                  "      Learning Time Offset (hours): %u\n"
-                  "      Gating Max Duration (minutes): %u\n"
-                  "      Gain Factor: %u",
+                  "      Index Offset: %" PRIu16 "\n"
+                  "      Learning Time Offset (hours): %" PRIu16 "\n"
+                  "      Gating Max Duration (minutes): %" PRIu16 "\n"
+                  "      Gain Factor: %" PRIu16,
                   tuning_params.index_offset, tuning_params.learning_time_offset_hours,
                   tuning_params.gating_max_duration_minutes, tuning_params.gain_factor);
   }
@@ -407,7 +407,7 @@ void SEN5XComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "    Ambient Pressure Compensation Source: %s",
                   this->ambient_pressure_compensation_source_->get_name().c_str());
   } else if (this->altitude_compensation_.has_value()) {
-    ESP_LOGCONFIG(TAG, "    Altitude Compensation: %d", this->altitude_compensation_.value());
+    ESP_LOGCONFIG(TAG, "    Altitude Compensation: %" PRIu16, this->altitude_compensation_.value());
   }
   LOG_SENSOR("  ", "HCHO", this->hcho_sensor_);
 }
@@ -475,22 +475,22 @@ void SEN5XComponent::update() {
       return;
     }
     if (this->pm_1_0_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "pm_1_0 = 0x%.4x", measurements[0]);
+      ESP_LOGV(TAG, "pm_1_0 = 0x%04" PRIx16, measurements[0]);
       float pm_1_0 = measurements[0] == UINT16_MAX ? NAN : measurements[0] / 10.0f;
       this->pm_1_0_sensor_->publish_state(pm_1_0);
     }
     if (this->pm_2_5_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "pm_2_5 = 0x%.4x", measurements[1]);
+      ESP_LOGV(TAG, "pm_2_5 = 0x%04" PRIx16, measurements[1]);
       float pm_2_5 = measurements[1] == UINT16_MAX ? NAN : measurements[1] / 10.0f;
       this->pm_2_5_sensor_->publish_state(pm_2_5);
     }
     if (this->pm_4_0_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "pm_4_0 = 0x%.4x", measurements[2]);
+      ESP_LOGV(TAG, "pm_4_0 = 0x%04" PRIx16, measurements[2]);
       float pm_4_0 = measurements[2] == UINT16_MAX ? NAN : measurements[2] / 10.0f;
       this->pm_4_0_sensor_->publish_state(pm_4_0);
     }
     if (this->pm_10_0_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "pm_10_0 = 0x%.4x", measurements[3]);
+      ESP_LOGV(TAG, "pm_10_0 = 0x%04" PRIx16, measurements[3]);
       float pm_10_0 = measurements[3] == UINT16_MAX ? NAN : measurements[3] / 10.0f;
       this->pm_10_0_sensor_->publish_state(pm_10_0);
     }
@@ -499,7 +499,7 @@ void SEN5XComponent::update() {
       if (measurements[5] == INT16_MAX || measurements[5] == UINT16_MAX) {
         temperature = NAN;
       }
-      ESP_LOGV(TAG, "temperature = 0x%.4x", measurements[5]);
+      ESP_LOGV(TAG, "temperature = 0x%04" PRIx16, measurements[5]);
       this->temperature_sensor_->publish_state(temperature);
     }
     if (this->humidity_sensor_ != nullptr) {
@@ -507,17 +507,17 @@ void SEN5XComponent::update() {
       if (measurements[4] == INT16_MAX || measurements[4] == UINT16_MAX) {
         humidity = NAN;
       }
-      ESP_LOGV(TAG, "humidity = 0x%.4x", measurements[4]);
+      ESP_LOGV(TAG, "humidity = 0x%04" PRIx16, measurements[4]);
       this->humidity_sensor_->publish_state(humidity);
     }
     if (this->voc_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "voc = 0x%.4x", measurements[6]);
+      ESP_LOGV(TAG, "voc = 0x%04" PRIx16, measurements[6]);
       int16_t voc_idx = static_cast<int16_t>(measurements[6]);
       float voc = (voc_idx < SEN5X_MIN_INDEX_VALUE || voc_idx > SEN5X_MAX_INDEX_VALUE) ? NAN : voc_idx / 10.0f;
       this->voc_sensor_->publish_state(voc);
     }
     if (this->nox_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "nox = 0x%.4x", measurements[7]);
+      ESP_LOGV(TAG, "nox = 0x%04" PRIx16, measurements[7]);
       int16_t nox_idx = static_cast<int16_t>(measurements[7]);
       float nox = (nox_idx < SEN5X_MIN_INDEX_VALUE || nox_idx > SEN5X_MAX_INDEX_VALUE) ? NAN : nox_idx / 10.0f;
       this->nox_sensor_->publish_state(nox);
@@ -528,17 +528,17 @@ void SEN5XComponent::update() {
         if (this->type_.value() == Sen5xType::SEN69C) {
           value = static_cast<int16_t>(measurements[9]);  // SEN69C reports as signed
         }
-        ESP_LOGV(TAG, "co2 = 0x%.4x", value);
+        ESP_LOGV(TAG, "co2 = 0x%04" PRIx16, static_cast<uint16_t>(value));
         float co2_1 = value == INT16_MAX ? NAN : value / 1.0f;
         this->co2_sensor_->publish_state(co2_1);
       } else {
-        ESP_LOGV(TAG, "co2 = 0x%.4x", measurements[8]);  // SEN66 reports as unsigned
+        ESP_LOGV(TAG, "co2 = 0x%04" PRIx16, measurements[8]);  // SEN66 reports as unsigned
         float co2_2 = measurements[8] == UINT16_MAX ? NAN : measurements[8] / 1.0f;
         this->co2_sensor_->publish_state(co2_2);
       }
     }
     if (this->hcho_sensor_ != nullptr) {
-      ESP_LOGV(TAG, "HCHO = 0x%.4x", measurements[8]);
+      ESP_LOGV(TAG, "HCHO = 0x%04" PRIx16, measurements[8]);
       float hcho = measurements[8] == UINT16_MAX ? NAN : measurements[8] / 10.0f;
       this->hcho_sensor_->publish_state(hcho);
     }
@@ -667,7 +667,7 @@ bool SEN5XComponent::write_ambient_pressure_compensation_(uint16_t pressure_in_h
       ESP_LOGE(TAG, ESP_LOG_MSG_COMM_FAIL);
       return false;
     }
-    ESP_LOGD(TAG, "Ambient Pressure Compensation updated, pres=%d hPa", pressure_in_hpa);
+    ESP_LOGD(TAG, "Ambient Pressure Compensation updated, pres=%" PRIu16 " hPa", pressure_in_hpa);
   }
   return true;
 }
@@ -785,7 +785,7 @@ void SEN5XComponent::perform_forced_co2_recalibration(uint16_t co2) {
     }
     this->busy_ = true;
     this->set_timeout(75, [this, co2]() {
-      ESP_LOGD(TAG, "Forced CO₂ Recalibration started: co2=%d", co2);
+      ESP_LOGD(TAG, "Forced CO₂ Recalibration started: co2=%" PRIu16, co2);
       if (!this->stop_measurements_()) {
         ESP_LOGE(TAG, "Forced CO₂ Recalibration failed");
         this->busy_ = false;
@@ -805,7 +805,8 @@ void SEN5XComponent::perform_forced_co2_recalibration(uint16_t co2) {
               if (correction == 0xFFFF) {
                 ESP_LOGE(TAG, "Forced CO₂ Recalibration failed");
               } else {
-                ESP_LOGD(TAG, "Forced CO₂ Recalibration finished, corr=%d", static_cast<int32_t>(correction) - 0x8000);
+                ESP_LOGD(TAG, "Forced CO₂ Recalibration finished, corr=%" PRId32,
+                         static_cast<int32_t>(correction) - 0x8000);
               }
             }
             if (!this->start_measurements_()) {
@@ -837,7 +838,8 @@ void SEN5XComponent::set_temperature_compensation(float offset, float normalized
     this->set_timeout(75, [this, comp]() {
       ESP_LOGD(
           TAG,
-          "Set Temperature Compensation updated, offset=%.3f, normalized_offset_slope=%.6f, time_constant=%u, slot=%u",
+          "Set Temperature Compensation updated, offset=%.3f, normalized_offset_slope=%.6f, time_constant=%" PRIu16
+          ", slot=%" PRIu8,
           comp.offset / 200.0, comp.normalized_offset_slope / 10000.0, comp.time_constant, comp.slot);
       if (!this->write_temperature_compensation_(comp)) {
         ESP_LOGE(TAG, "Set Temperature Compensation failed");
