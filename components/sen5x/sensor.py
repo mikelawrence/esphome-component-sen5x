@@ -419,9 +419,10 @@ async def to_code(config):
         for key, funcName in CO2_SETTING_MAP.items():
             if setting := config.get(key):
                 cg.add(getattr(var, funcName)(setting))
-        if source := cfg.get(CONF_AMBIENT_PRESSURE_COMPENSATION_SOURCE):
-            sens = await cg.get_variable(source)
-            cg.add(var.set_ambient_pressure_compensation_source(sens))
+        await cg.add_variable(
+            var.set_ambient_pressure_compensation_source,
+            cfg.get(CONF_AMBIENT_PRESSURE_COMPENSATION_SOURCE),
+        )
 
 
 SEN5X_ACTION_SCHEMA = maybe_simple_id({cv.GenerateID(): cv.use_id(SEN5XComponent)})
