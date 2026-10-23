@@ -458,6 +458,7 @@ SEN5X_VALUE_ACTION_SCHEMA = maybe_simple_id(
     "sen5x.perform_forced_co2_recalibration",
     PerformForcedCo2RecalibrationAction,
     SEN5X_VALUE_ACTION_SCHEMA,
+    synchronous=False,
 )
 async def sen5x_pfcc_to_code(config, action_id, template_arg, args):
     var = cg.new_Pvariable(action_id, template_arg)
@@ -471,6 +472,7 @@ async def sen5x_pfcc_to_code(config, action_id, template_arg, args):
     "sen5x.set_ambient_pressure_compensation",
     SetAmbientPressureCompensationAction,
     SEN5X_VALUE_ACTION_SCHEMA,
+    synchronous=False,
 )
 async def sen5x_saph_to_code(config, action_id, template_arg, args):
     var = cg.new_Pvariable(action_id, template_arg)
@@ -501,6 +503,7 @@ SEN5X_TEMPERATURE_COMPENSATION_SCHEMA = cv.Schema(
     "sen5x.set_temperature_compensation",
     SetTemperatureCompensationAction,
     SEN5X_TEMPERATURE_COMPENSATION_SCHEMA,
+    synchronous=False,
 )
 async def sen5x_stc_to_code(config, action_id, template_arg, args):
     var = cg.new_Pvariable(action_id, template_arg)
