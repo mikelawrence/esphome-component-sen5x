@@ -49,6 +49,7 @@ from esphome.const import (
     UNIT_PARTS_PER_BILLION,
     UNIT_PARTS_PER_MILLION,
     UNIT_PERCENT,
+    __version__,
 )
 
 CODEOWNERS = ["@martgras", "@mikelawrence"]
