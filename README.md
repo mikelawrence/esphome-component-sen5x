@@ -8,7 +8,7 @@
 > [!NOTE]
 > I recommend you use my [sen6x component](#sen6x-external-component) below or the ESPHome built-in sen6x component. This will not be updated frequently.
 
-This external component adds SEN60, SEN63C, SEN65, SEN66, SEN68 and SEN69C support to the built-in sen5x component.
+This external component adds SEN62, SEN63C, SEN65, SEN66, SEN68 and SEN69C support to the built-in sen5x component.
 
 > [!NOTE]
 > ESPHome now has a SEN6X component. They decided to not use my pull request that supported the SEN6X sensors in the SEN5X component after 6 months of work. Kinda sucked but it what it is. I ended up supporting the new SEN6X component integration but it's not really the way I would have handled it. I doubt I will support ESPHome directly in the future but I will release new components on Github separate fom ESPHome.
@@ -23,18 +23,13 @@ external_components:
 
 # Example SEN66 configuration entry
 sensor:
-  - platform: sen6x
+  - platform: sen5x
     id: my_sen66
     type: SEN66
     temperature_compensation:
       offset: 0
       normalized_offset_slope: 0
       time_constant: 0
-    temperature_acceleration:
-      k: 20
-      p: 20
-      t1: 100
-      t2: 300
     pm_1_0:
       name: "PM <1µm Mass concentration"
     pm_2_5:
@@ -49,7 +44,6 @@ sensor:
       name: "Humidity"
     voc:
       name: "VOC"
-      store_algorithm_state: true
       algorithm_tuning:
         index_offset: 100
         learning_time_offset_hours: 12
@@ -68,6 +62,7 @@ sensor:
       name: "CO₂"
       automatic_self_calibration: false
       ambient_pressure_compensation_source: pressure_hpa
+    store_baseline: true
 ```
 
 ### SEN5X Configuration Variables
@@ -96,14 +91,12 @@ sensor:
 * **co2** (*Optional*): The information for the Carbon dioxide (CO₂) sensor. Readings in ppm. Only available with
   SEN63C, SEN66 or SEN69C.
 
-  * **auto_self_calibration** (*Optional*, boolean): True enables automatic CO₂ self calibration.
+  * **automatic_self_calibration** (*Optional*, boolean): True enables automatic CO₂ self calibration.
   False disables automatic CO₂ calibration. Default is `true`.
   * **altitude_compensation** (*Optional*, integer): When set to altitude (in meters), the CO₂ sensor will be
   statically compensated for deviations due to current altitude. See [CO₂ Compensation](#co₂-compensation) section below
   for more information.
-  * **ambient_pressure_compensation** (*Optional*, integer): When set to pressure (in hPA), the CO₂ sensor will be
-  compensated for deviations due to ambient pressure. See [CO₂ Compensation](#co₂-compensation) section below
-  for more information.
+  * Ambient pressure can be set dynamically with the `sen5x.set_ambient_pressure_compensation` action; there is no static pressure-value configuration key.
   * **ambient_pressure_compensation_source** (*Optional*, [ID](/guides/configuration-types#config-id)):
   Sets an external pressure sensor ID (must report in hPA). This will compensate the CO₂ sensor for deviations
   due to current pressure. This correction is applied with each update of the CO₂ sensor. See
@@ -111,7 +104,7 @@ sensor:
   * All options from [Sensor](https://esphome.io/components/sensor/#base-sensor-configuration).
 
 * **voc** (*Optional*): The information for the VOC Index sensor. Only available with SEN54, SEN55, SEN65, SEN66,
-  SEN69 or SEN69C.
+  SEN68 or SEN69C.
 
   * **algorithm_tuning** (*Optional*): The VOC algorithm can be customized by tuning 6 different parameters.
     For more details see
@@ -134,7 +127,7 @@ sensor:
     * **gain_factor** (*Optional*): Gain factor to amplify or to attenuate the VOC index output.
       Allowed values are in range 1..1000. The default value is 230. All options from [Sensor](https://esphome.io/components/sensor/#base-sensor-configuration).
 
-* **nox** (*Optional*): NOx Index. Only available with SEN55, SEN65, SEN66, SEN69 or SEN69C.
+* **nox** (*Optional*): NOx Index. Only available with SEN55, SEN65, SEN66, SEN68 or SEN69C.
 
   * **algorithm_tuning** (*Optional*): Like VOC the NOx algorithm can be customized by tuning 5 different parameters.
 
@@ -161,12 +154,12 @@ sensor:
   skip the initial learning phase.
   Only available with SEN54, SEN55, SEN65, SEN66, SEN68 or SEN69C.
 
-* **auto_cleaning_interval** (*Optional*, positive int): The periodic fan-cleaning interval in seconds.
-  Only available with SEN55, SEN54 OR SEN55.
+* **auto_cleaning_interval** (*Optional*, update interval): The periodic fan-cleaning interval.
+  Available with SEN50, SEN54 and SEN55.
 
-* **temperature_compensation** (*Optional*, sequence): These parameters allow the user to compensate temperature
+* **temperature_compensation** (*Optional*, mapping): These parameters allow the user to compensate temperature
   effects of the customer design by applying custom temperature offsets to the ambient temperature. Only available
-  with SEN54, SEN55, SEN62, SEN63C, SEN65, SEN66, SEN69 or SEN69C.
+  with SEN54, SEN55, SEN62, SEN63C, SEN65, SEN66, SEN68 or SEN69C.
   See [Temperature Compensation](#sen5x-temperature-compensation) section below for more information.
 
   * **offset** (*Optional*, float): Temperature offset, in °C. Defaults to `0`.
