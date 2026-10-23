@@ -366,7 +366,13 @@ FINAL_VALIDATE_SCHEMA = final_validate
 
 
 async def to_code(config):
-    var = await i2c.new_i2c_component(config)
+    # TODO: Remove this check when we drop support for ESPHome 2026.10.0 and older
+    if cv.Version.parse(__version__) >= cv.Version(2026, 11, 0):
+        var = await i2c.new_i2c_component(config)
+    else:
+        var = cg.new_Pvariable(config[CONF_ID])
+        await cg.register_component(var, config)
+        await i2c.register_i2c_device(var, config)
 
     cg.add(var.set_type(SEN5X_TYPES[config[CONF_TYPE]]))
     for key, funcName in SETTING_MAP.items():
