@@ -50,7 +50,7 @@ from esphome.const import (
     UNIT_PARTS_PER_BILLION,
     UNIT_PARTS_PER_MILLION,
     UNIT_PERCENT,
-    __version__ as ESPHOME_VERSION,
+    __version__,
 )
 
 CODEOWNERS = ["@martgras", "@mikelawrence"]
@@ -421,7 +421,7 @@ async def to_code(config):
         for key, funcName in CO2_SETTING_MAP.items():
             if setting := config.get(key):
                 cg.add(getattr(var, funcName)(setting))
-        if Version.parse(ESPHOME_VERSION) >= Version(2026, 11, 0):
+        if Version.parse(__version__) >= Version(2026, 11, 0):
             await cg.add_variable(
                 var.set_ambient_pressure_compensation_source,
                 cfg.get(CONF_AMBIENT_PRESSURE_COMPENSATION_SOURCE),
