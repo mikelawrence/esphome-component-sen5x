@@ -409,7 +409,7 @@ void SEN5XComponent::dump_config() {
   }
   if (this->ambient_pressure_compensation_source_ != nullptr) {
     ESP_LOGCONFIG(TAG, "    Ambient Pressure Compensation Source: %s",
-                  this->ambient_pressure_compensation_source_->get_name().c_str());
+                  LOG_STR_ARG(this->ambient_pressure_compensation_source_->get_log_name()));
   } else if (this->altitude_compensation_.has_value()) {
     ESP_LOGCONFIG(TAG, "    Altitude Compensation: %" PRIu16, this->altitude_compensation_.value());
   }
