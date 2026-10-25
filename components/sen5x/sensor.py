@@ -3,6 +3,7 @@ from esphome.automation import maybe_simple_id
 import esphome.codegen as cg
 from esphome.components import i2c, sensirion_common, sensor
 import esphome.config_validation as cv
+from esphome.core import Version
 from esphome.const import (
     CONF_ALGORITHM_TUNING,
     CONF_ALTITUDE_COMPENSATION,
@@ -424,7 +425,12 @@ async def to_code(config):
         for key, funcName in CO2_SETTING_MAP.items():
             if setting := config.get(key):
                 cg.add(getattr(var, funcName)(setting))
-        if source := cfg.get(CONF_AMBIENT_PRESSURE_COMPENSATION_SOURCE):
+        if Version.parse(__version__) >= Version(2026, 11, 0):
+            await cg.add_variable(
+                var.set_ambient_pressure_compensation_source,
+                cfg.get(CONF_AMBIENT_PRESSURE_COMPENSATION_SOURCE),
+            )
+        elif source := cfg.get(CONF_AMBIENT_PRESSURE_COMPENSATION_SOURCE):
             sens = await cg.get_variable(source)
             cg.add(var.set_ambient_pressure_compensation_source(sens))
 
