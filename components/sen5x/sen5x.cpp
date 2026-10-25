@@ -408,6 +408,7 @@ void SEN5XComponent::dump_config() {
     ESP_LOGCONFIG(TAG, "    Automatic self calibration: %s", ONOFF(this->auto_self_calibration_.value()));
   }
   if (this->ambient_pressure_compensation_source_ != nullptr) {
+  // TODO: Remove this conditional when ESPHome 2026.11 is the minimum supported version
 #if ESPHOME_VERSION_CODE >= VERSION_CODE(2026, 11, 0)
     ESP_LOGCONFIG(TAG, "    Ambient Pressure Compensation Source: %s",
                   LOG_STR_ARG(this->ambient_pressure_compensation_source_->get_log_name()));
