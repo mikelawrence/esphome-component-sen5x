@@ -3,7 +3,6 @@ from esphome.automation import maybe_simple_id
 import esphome.codegen as cg
 from esphome.components import i2c, sensirion_common, sensor
 import esphome.config_validation as cv
-from esphome.core import Version
 from esphome.const import (
     CONF_ALGORITHM_TUNING,
     CONF_ALTITUDE_COMPENSATION,
@@ -52,6 +51,7 @@ from esphome.const import (
     UNIT_PERCENT,
     __version__,
 )
+from esphome.core import Version
 
 CODEOWNERS = ["@martgras", "@mikelawrence"]
 DEPENDENCIES = ["i2c"]
